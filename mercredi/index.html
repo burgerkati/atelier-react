@@ -89,7 +89,6 @@
             const message = patate.commit.message
             const author = patate.commit.author.name
             const dateStr = patate.commit.author.date;
-
             //console.log('dateStr', dateStr)
 
             //const date = dateStr.slice(0, 10)
@@ -137,8 +136,25 @@
         */
         function CommitList(props){
             const commits = props.commits;
-            console.log('commits', commits)
+            const maxObject = {};
 
+            console.log('commits', commits)
+            /*
+            here is where we assemble commits by date
+            create an object that has a key of date and
+            has a value array of commits "by date" on that specific day
+            visualise occurrences of commits
+            */
+            for(let commit of commits){
+              const dateOfCommit = commit.commit.author.date
+              const dateFormat = dateOfCommit.slice(0, 10)
+              console.log("dates of commits", dateFormat);
+              if(!Array.isArray(maxObject[dateFormat])){
+                maxObject[dateFormat] = [];
+              }  // should display an array with the key = dateFormat
+              maxObject[dateFormat].push(commit)
+            }
+            console.log(maxObject);
             /*
                 const array2 = array1.map(fois2);
                 [1, 4, 9, 16] => [fois2(1), fois2(4), fois2(9), fois2(16)]
@@ -174,7 +190,7 @@
                 console.log('premierMessage', premierMessage)
 
                 const quiString = `David ${data.length}`
-                // rendu avec des données
+                // here is where we render the components
                 ReactDOM.render(
                     <CommitList commits={data}/>,
                     document.getElementById('root')
