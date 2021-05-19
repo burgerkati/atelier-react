@@ -14,6 +14,7 @@
     <script src="https://d3js.org/d3-fetch.v2.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha256-qXBd/EfAdjOA2FGrGAG+b3YBn2tn5A6bhz+LSgYD96k=" crossorigin="anonymous"></script>
 
     <style>
         .commit{
@@ -136,15 +137,27 @@
         */
         function CommitList(props){
             const commits = props.commits;
-            const maxObject = {};
+            // const maxObject = {}; pour l'exemple 2 qui commence à la ligne 162
 
-            console.log('commits', commits)
+            console.log('commits', commits);
+            /*
+            third method of assembly of commits by date with cdn lodash script on line 17
+            allows us to use _.groupBy array method
+            */
+            function sortDate(oneCommit){
+              console.log(oneCommit);
+              const dateOfCommit = oneCommit.commit.author.date
+              const dates = moment(dateOfCommit).format('D MMM YYYY')
+              return dates;
+            }
+            const commitSort = _.groupBy(commits, sortDate)
+            console.log(commitSort);
             /*
             here is where we assemble commits by date
             create an object that has a key of date and
             has a value array of commits "by date" on that specific day
             visualise occurrences of commits
-            */
+            Example 2 :
             for(let commit of commits){
               const dateOfCommit = commit.commit.author.date
               const dateFormat = dateOfCommit.slice(0, 10)
@@ -155,6 +168,7 @@
               maxObject[dateFormat].push(commit)
             }
             console.log(maxObject);
+            */
             /*
                 const array2 = array1.map(fois2);
                 [1, 4, 9, 16] => [fois2(1), fois2(4), fois2(9), fois2(16)]
@@ -169,10 +183,11 @@
                     <Commit patate={commit}/>
                 </li>)
             }
-
-            // array1 (le tableau de base), c'est le tableau des commits
-            // la fonction CommitLi transforme 1 commit en le morceau d'interface équivalent
-            // array2 (le tableau résultat), c'est un tableau de <li>s
+            /*
+            array1 (le tableau de base), c'est le tableau des commits
+            la fonction CommitLi transforme 1 commit en le morceau d'interface équivalent
+            array2 (le tableau résultat), c'est un tableau de <li>s
+            */
             const commitLis = commits.map(CommitLi)
 
             return (<ul className="commits">
@@ -198,7 +213,7 @@
 
             });
 
-        // rendu initial
+        // initial render
         ReactDOM.render(
             React.createElement( Titre, {qui: 'David'} ),
             //<Titre qui="David"/>, // JSX
