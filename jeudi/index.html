@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script src="https://d3js.org/d3-dsv.v2.min.js"></script>
+    <script src="https://d3js.org/d3-fetch.v2.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha256-qXBd/EfAdjOA2FGrGAG+b3YBn2tn5A6bhz+LSgYD96k=" crossorigin="anonymous"></script>
+
+    <style>
+        .commit{
+            border: 1px solid grey;
+            padding: 0.5rem;
+        }
+
+        .commit:hover{
+            background-color: #EEE;
+        }
+
+        .author{
+            color: darkolivegreen;
+        }
+
+        .date{
+            color: darkorange;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+        // React.createElement( Composant, props, enfants );
+
+        /*
+            Titre est une fonction JavaScript,
+            utilisée comme un composant React
+            "props", c'est un objet contenant des données utilisées par le composant
+            Ici, "props" n'a qu'une seule propriété :
+            - "qui" (à qui on dit bonjour)
+
+            Exemple usage :
+            - React.createElement( Titre, {qui: 'David'} )
+            - <Titre qui="David"/>
+        */
+        function Titre(props){
+            console.log('Titre props', props)
+            const qui = props.qui;
+            console.log('qui', qui)
+            return <h1>HELLO, {qui}!</h1>
+        }
+
+        /*
+            Commit est une fonction JavaScript,
+            utilisée comme un composant React
+            "props", c'est un objet contenant des données utilisées par le composant
+            Ici, "props" n'a qu'une seule propriété :
+            - "patate" (qui contient, on l'espère, un objet qui représente
+            un commit github (récupéré de l'API))
+
+            props, c'est un objet qui a cette forme :  {
+                patate : {
+                    commit: {
+                        message: 'ceci est un commit',
+                        author: {
+                            name: 'David'
+                        }
+                    },
+                    sha: 'hjkjblk',
+                    url: 'kzc,e,'
+                }
+            }
+
+        */
+        function Commit(props){
+            //console.log('props', props)
+
+            const patate = props.patate;
+            const message = patate.commit.message
+            const author = patate.commit.author.name
+            const dateStr = patate.commit.author.date;
+            //console.log('dateStr', dateStr)
+
+            //const date = dateStr.slice(0, 10)
+            const date = moment(dateStr).format('D MMM YYYY')
+
+            //console.log('date moment', moment(dateStr))
+
+            //console.log('date à afficher', date)
+
+
+            return (<div className="commit">
+                <strong className="message">{message}</strong> commité
+                par <em className="author">{author}</em> le
+                <span className="date">{date}</span>
+            </div>)
+        }
+
+        /*
+            CommitList est une fonction JavaScript, utilisée comme un composant React
+            "props" n'a qu'une seule propriété :
+            - "commits" (qui contient, on l'espère, un tableau d'objets qui représentent
+            chacun un commit github (récupéré de l'API))
+
+            props, c'est un objet qui a cette forme :  {
+                commits : [
+                    {
+                        commit: {
+                            message: 'ceci est un commit',
+                            author: { name: 'David' }
+                        },
+                        sha: 'hjkjblk',
+                        url: 'kzc,e,'
+                    },
+                    {
+                        commit: {
+                            message: 'ceci est un commit',
+                            author: { name: 'David' }
+                        },
+                        sha: 'hjkjblk',
+                        url: 'kzc,e,'
+                    }
+                ]
+            }
+
+        */
+        function CommitList(props){
+            const commits = props.commits;
+            // const maxObject = {}; pour l'exemple 2 qui commence à la ligne 162
+
+            console.log('commits', commits);
+            /*
+            third method of assembly of commits by date with cdn lodash script on line 17
+            allows us to use _.groupBy array method
+            */
+            function sortDate(oneCommit){
+              console.log(oneCommit);
+              const dateOfCommit = oneCommit.commit.author.date
+              const dates = moment(dateOfCommit).format('D MMM YYYY')
+              return dates;
+            }
+            const commitSort = _.groupBy(commits, sortDate)
+            console.log(commitSort);
+            /*
+            here is where we assemble commits by date
+            create an object that has a key of date and
+            has a value array of commits "by date" on that specific day
+            visualise occurrences of commits
+            Example 2 :
+            for(let commit of commits){
+              const dateOfCommit = commit.commit.author.date
+              const dateFormat = dateOfCommit.slice(0, 10)
+              console.log("dates of commits", dateFormat);
+              if(!Array.isArray(maxObject[dateFormat])){
+                maxObject[dateFormat] = [];
+              }  // should display an array with the key = dateFormat
+              maxObject[dateFormat].push(commit)
+            }
+            console.log(maxObject);
+            */
+            /*
+                const array2 = array1.map(fois2);
+                [1, 4, 9, 16] => [fois2(1), fois2(4), fois2(9), fois2(16)]
+
+                function fois2(x){
+                    return x*2
+                }
+            */
+// /*
+// disable li to test h2
+            function CommitLi(commit){
+              console.log("commitLi");
+                return (<li>
+                    <Commit patate={commit}/>
+                </li>)
+            }
+// */
+            /*
+            array1 (le tableau de base), c'est le tableau des commits
+            la fonction CommitLi transforme 1 commit en le morceau d'interface équivalent
+            array2 (le tableau résultat), c'est un tableau de <li>s
+            */
+            const commitLis = commits.map(CommitLi)
+
+            return (<ul className="commits">
+                {commitLis}
+            </ul>)
+        }
+        // nouveau composant qui va récupérer les nouvelles données pour section et h2---sortcommitcrochet date fonction Object.keys
+        function CommitDateGroup(props){
+          const date = props.date;
+          // const commit =
+          console.log("commitDate!!!");
+          // return here new value
+          // function Heading2(date){
+          //   const commitSort = _.groupBy(commits, sortDate);
+          //   console.log(Object.keys(commitSort))
+          //   console.log("displayh2");
+          // }
+          function Heading2(date){
+            console.log("h2Date");
+              return (<h2>
+                  <Commit patate={date}/>
+              </h2>)
+          }
+
+        }
+
+        // appel à l'API github pour récupérer les commits
+        d3.json("https://api.github.com/repos/betagouv/comobi-core/commits?per_page=37")
+            // quand les données, reviennent de l'API, appeler cette fonction
+            .then(function (data) {
+                console.log('les commits !', data);
+
+                const premierMessage = data[0].commit.message
+                console.log('premierMessage', premierMessage)
+
+                const quiString = `David ${data.length}`
+                // here is where we render the components
+                //
+                ReactDOM.render(
+                    <CommitList commits={data}/>,
+                    document.getElementById('root')
+                );
+
+            });
+
+        // initial render
+        ReactDOM.render(
+            React.createElement( Titre, {qui: 'David'} ),
+            //<Titre qui="David"/>, // JSX
+            document.getElementById('root')
+        );
+
+    </script>
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this section for a production-ready setup with JSX:
+      https://reactjs.org/docs/add-react-to-a-website.html#add-jsx-to-a-project
+
+      In a larger project, you can use an integrated toolchain that includes JSX instead:
+      https://reactjs.org/docs/create-a-new-react-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      https://reactjs.org/docs/react-without-jsx.html
+    -->
+</body>
+
+</html>
