@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script src="https://d3js.org/d3-dsv.v2.min.js"></script>
+    <script src="https://d3js.org/d3-fetch.v2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha256-qXBd/EfAdjOA2FGrGAG+b3YBn2tn5A6bhz+LSgYD96k=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+
+    <style>
+        .commit{
+            border: 1px solid grey;
+            padding: 0.5rem;
+        }
+
+        .commit:hover{
+            background-color: #EEE;
+        }
+        .commits {
+          list-style-type: none;
+        }
+
+        .author{
+            color: darkolivegreen;
+        }
+
+        .date{
+            color: darkorange;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+        // React.createElement( Composant, props, enfants );
+
+        /*
+            Titre est une fonction JavaScript,
+            utilisée comme un composant React
+            "props", c'est un objet contenant des données utilisées par le composant
+            Ici, "props" n'a qu'une seule propriété :
+            - "qui" (à qui on dit bonjour)
+
+            Exemple usage :
+            - React.createElement( Titre, {qui: 'David'} )
+            - <Titre qui="David"/>
+        */
+        function Titre(props){
+            console.log('Titre props', props)
+            const qui = props.qui;
+            console.log('qui', qui)
+            return <h1>HELLO, {qui}!</h1>
+        }
+
+        /*
+            Commit est une fonction JavaScript,
+            utilisée comme un composant React
+            "props", c'est un objet contenant des données utilisées par le composant
+            Ici, "props" n'a qu'une seule propriété :
+            - "patate" (qui contient, on l'espère, un objet qui représente
+            un commit github (récupéré de l'API))
+
+            props, c'est un objet qui a cette forme :  {
+                patate : {
+                    commit: {
+                        message: 'ceci est un commit',
+                        author: {
+                            name: 'David'
+                        }
+                    },
+                    sha: 'hjkjblk',
+                    url: 'kzc,e,'
+                }
+            }
+
+        */
+        function Commit(props){
+            //console.log('props', props)
+
+            const patate = props.patate;
+            const message = patate.commit.message
+            const author = patate.commit.author.name
+            const dateStr = patate.commit.author.date;
+
+            //console.log('dateStr', dateStr)
+
+            //const date = dateStr.slice(0, 10)
+            const date = moment(dateStr).format('D MMM YYYY')
+
+            //console.log('date moment', moment(dateStr))
+
+            //console.log('date à afficher', date)
+
+
+            return (<div className="commit">
+                <strong className="message">{message}</strong> commité
+                par <em className="author">{author}</em> le
+                <span className="date">{date}</span>
+            </div>)
+        }
+
+
+        function CommitList(props){
+            const commits = props.commits;
+            // console.log('commits', commits)
+
+            function rangerParDate(unCommit){
+              // console.log(unCommit);
+              const datesHeure = unCommit.commit.author.date
+              const dates = moment(datesHeure).format('D MMM YYYY')
+              return dates;
+            }
+
+            const commitRanger = _.groupBy (commits, rangerParDate)
+            console.log(commitRanger);
+            const dates = Object.keys(commitRanger)
+            // console.log(dates)
+            // pour passer la méthode pour trier date par date
+            const comitsDateGroupData = dates.map(function(date){
+              const commits = commitRanger[date]
+              return {date: date, commits: commits}
+            })
+            console.log(comitsDateGroupData)
+
+            return (<ul className="commits">
+                {comitsDateGroupData.map(function(data){
+                  const date = data.date
+                  const commits = data.commits
+                  return <CommitDateGroup date={date} commits={commits}>
+                        </CommitDateGroup>
+                })}
+            </ul>)
+        }
+
+
+        function CommitDateGroup (props){
+            const commits = props.commits
+            const date = props.date
+            console.log("occurrences", commits);
+/*
+on pouvait définir ici un const occurrences = qu'on pouvait appeller au sein du return
+ou utiliser la méthode .map(function) au sein du return <section>
+il était nécessaire de rappeller le constant "patate" du composant "Commit"
+dans la fonction à l'intérieur du return
+attention : il n'est peut-être pas possible de commenter à l'intérieur du JSX !
+*/
+              return <section>
+                      <h2>{date}</h2>
+                      {commits.map(function(commit){
+                        return <Commit patate={commit} />
+                      })}
+                     </section>
+            }
+
+
+            // function CommitLi(commit) {
+            //     return (<li>
+            //         <Commit commitObj={commit} />
+            //     </li>)
+            // }
+            // ici pour <Commit commit="occurrences"
+
+        // appel à l'API github pour récupérer les commits
+        d3.json("https://api.github.com/repos/betagouv/comobi-core/commits?per_page=37")
+            // quand les données, reviennent de l'API, appeler cette fonction
+            .then(function (data) {
+                // console.log('les commits !', data);
+
+                const premierMessage = data[0].commit.message
+                // console.log('premierMessage', premierMessage)
+
+                const quiString = `David ${data.length}`
+                // rendu avec des données
+                ReactDOM.render(
+                    <CommitList commits={data}/>,
+                    document.getElementById('root')
+                );
+
+            });
+
+        // rendu initial
+        ReactDOM.render(
+            React.createElement( Titre, {qui: 'David'} ),
+            //<Titre qui="David"/>, // JSX
+            document.getElementById('root')
+        );
+
+    </script>
+
+
+    <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this section for a production-ready setup with JSX:
+      https://reactjs.org/docs/add-react-to-a-website.html#add-jsx-to-a-project
+
+      In a larger project, you can use an integrated toolchain that includes JSX instead:
+      https://reactjs.org/docs/create-a-new-react-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      https://reactjs.org/docs/react-without-jsx.html
+    -->
+</body>
+
+</html>
